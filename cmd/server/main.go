@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"github.com/mchmarny/gcputil/metric"
 )
 
 var (
@@ -31,11 +32,16 @@ func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, 
 		return nil, errors.New("nil Id")
 	}
 
-	if req.Target == nil {
+	if req.GetTarget() == nil {
 		return nil, errors.New("nil Target")
 	}
 
 	logger.Printf("request: %+v", req)
+	
+	c, err := metric.NewClient(ctx)
+	if err = c.Publish(ctx, req.GetTarget().GetRegion(), "ping", 1); err =! nil {
+		return nil, fmt.Errorf("error while publishing metrics: %v", err)
+	}
 
 	return &pb.Response{
 		Request: req,
