@@ -39,7 +39,7 @@ func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, 
 	logger.Printf("request: %+v", req)
 	
 	c, err := metric.NewClient(ctx)
-	if err = c.Publish(ctx, req.GetTarget().GetRegion(), "ping", 1); err =! nil {
+	if err = c.Publish(ctx, req.GetTarget().GetRegion(), "ping", 1); err != nil {
 		return nil, fmt.Errorf("error while publishing metrics: %v", err)
 	}
 
