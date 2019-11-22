@@ -14,7 +14,7 @@ gcloud spanner databases create "echo" \
 
 gcloud spanner databases ddl update "echo" \
   --instance $SERVICE_NAME \
-  --ddl "CREATE TABLE pings (id STRING(MAX) NOT NULL,completed TIMESTAMP,region STRING(MAX) NOT NULL,sent TIMESTAMP NOT NULL,) PRIMARY KEY (id)"
+  --ddl "CREATE TABLE pings (id STRING(MAX) NOT NULL, region STRING(MAX) NOT NULL, sent TIMESTAMP NOT NULL, completed TIMESTAMP,) PRIMARY KEY (id)"
 
 gcloud spanner databases ddl update "echo" \
   --instance $SERVICE_NAME \

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -16,11 +17,14 @@ import (
 var (
 	logger = log.New(os.Stdout, "", 0)
 	path   = flag.String("targets", "", "Path to server targets file")
+	dbName = flag.String("db", "", "Database path")
 	source = flag.String("source", "client", "Name of the invoking client ['client']")
 )
 
 func main() {
 	flag.Parse()
+
+	ctx := context.Background()
 
 	data, err := ioutil.ReadFile(*path)
 	if err != nil {
@@ -35,12 +39,13 @@ func main() {
 
 	logger.Printf("Targets: %d", len(targets))
 	for _, t := range targets {
-		ping(t)
+		// TODO: goroutine
+		ping(ctx, t)
 	}
 
 }
 
-func ping(target pb.Target) {
+func ping(ctx context.Context, target pb.Target) {
 
 	logger.Printf("Ping:\n   %s", target.GetRegion())
 	resp, err := client.PingClient(&target)
@@ -54,8 +59,14 @@ func ping(target pb.Target) {
 	if err != nil {
 		logger.Fatalf("invalid response sent on: %v", err)
 	}
-	dur := time.Now().Sub(sentOn)
+	now := time.Now()
+	dur := now.Sub(sentOn)
 
 	logger.Printf("Duration:\n  %v", dur)
+
+	err = client.CompletePing(ctx, *dbName, resp.GetRequest().GetId(), now)
+	if err != nil {
+		logger.Printf("error while completing ping: %v", err)
+	}
 
 }
