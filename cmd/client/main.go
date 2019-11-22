@@ -2,43 +2,60 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	ptypes "github.com/golang/protobuf/ptypes"
-	"github.com/google/uuid"
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
 	"github.com/mchmarny/distributed-echo/pkg/client"
+	"gopkg.in/yaml.v2"
 )
 
 var (
 	logger = log.New(os.Stdout, "", 0)
-	target = flag.String("target", "", "Server address (host:port)")
-	source = flag.String("source", "client", "Name of the invoking client [client]")
+	path   = flag.String("targets", "", "Path to server targets file")
+	source = flag.String("source", "client", "Name of the invoking client ['client']")
 )
 
 func main() {
 	flag.Parse()
 
-	req := &pb.Request{
-		RequestId:  uuid.New().String(),
-		SourceName: *source,
-		SentOn:     ptypes.TimestampNow(),
-		Targets:    []string{*target},
-	}
-
-	resp, err := client.PingClient(req)
-
+	data, err := ioutil.ReadFile(*path)
 	if err != nil {
-		logger.Fatalf("Error while executing Ping: %v", err)
+		logger.Printf("error reading file: %v", err)
 	}
-	logger.Printf("REquest:\n  %+v", req)
+
+	targets := []pb.Target{}
+	err = yaml.Unmarshal([]byte(data), &targets)
+	if err != nil {
+		logger.Fatalf("error: %v", err)
+	}
+
+	logger.Printf("Targets: %d", len(targets))
+	for _, t := range targets {
+		ping(t)
+	}
+
+}
+
+func ping(target pb.Target) {
+
+	logger.Printf("Ping:\n   %s", target.GetRegion())
+	resp, err := client.PingClient(&target)
+	if err != nil {
+		logger.Fatalf("error while executing Ping: %v", err)
+	}
+
 	logger.Printf("Response:\n  %+v", resp)
 
-	sentOn, _ := ptypes.Timestamp(req.GetSentOn())
-	recdOn, _ := ptypes.Timestamp(resp.GetProcessedOn())
-	reqDur := recdOn.Sub(sentOn)
+	sentOn, err := ptypes.Timestamp(resp.GetRequest().GetSent())
+	if err != nil {
+		logger.Fatalf("invalid response sent on: %v", err)
+	}
+	dur := time.Now().Sub(sentOn)
 
-	logger.Printf("Duration:\n  %v", reqDur)
+	logger.Printf("Duration:\n  %v", dur)
 
 }

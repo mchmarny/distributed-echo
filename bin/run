@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+bin/client --targets etc/demo.yaml --source test
+
+

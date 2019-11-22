@@ -9,4 +9,5 @@ require (
 	github.com/pkg/errors v0.8.1
 	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914
 	google.golang.org/grpc v1.25.1
+	gopkg.in/yaml.v2 v2.2.2
 )

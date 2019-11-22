@@ -9,16 +9,19 @@ service PingService {
 }
 
 message Request {
-  string request_id = 1;
-  string source_name = 2;
-  google.protobuf.Timestamp sent_on = 3;
-  repeated string targets = 4;
+  string id = 1;
+  google.protobuf.Timestamp sent = 2;
+  Target target = 3;
+}
+
+message Target {
+  string region = 1;
+  string uri = 2;
+  string port = 3;
 }
 
 
 message Response {
-  string request_id = 1;
-  string target = 2;
-  google.protobuf.Timestamp processed_on = 3;
+  Request request = 1;
 }
 

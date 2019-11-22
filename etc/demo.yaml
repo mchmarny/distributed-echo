@@ -1,0 +1,13 @@
+---
+- region: us-central1
+  uri: distributed-echo-2gtouos2pq-uc.a.run.app
+  port: 443
+- region: us-east1
+  uri: distributed-echo-2gtouos2pq-ue.a.run.app
+  port: 443
+- region: europe-west1
+  uri: distributed-echo-2gtouos2pq-ew.a.run.app
+  port: 443
+- region: asia-northeast1
+  uri: distributed-echo-2gtouos2pq-an.a.run.app
+  port: 443

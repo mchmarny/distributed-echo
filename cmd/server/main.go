@@ -6,8 +6,6 @@ import (
 
 	"os"
 
-	ptypes "github.com/golang/protobuf/ptypes"
-
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
 	"github.com/mchmarny/gcputil/env"
 
@@ -29,23 +27,20 @@ func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, 
 		return nil, errors.New("nil request")
 	}
 
-	if req.RequestId == "" {
-		return nil, errors.New("nil RequestId")
+	if req.GetId() == "" {
+		return nil, errors.New("nil Id")
 	}
 
-	if req.SourceName == "" {
-		return nil, errors.New("nil SourceName")
+	if req.Target == nil {
+		return nil, errors.New("nil Target")
 	}
 
-	if len(req.Targets) == 0 {
-		return nil, errors.New("empty Targets")
-	}
+	logger.Printf("request: %+v", req)
 
 	return &pb.Response{
-		RequestId:   req.RequestId,
-		Target:      req.Targets[0], // TODO: Rnd select one and write to DB
-		ProcessedOn: ptypes.TimestampNow(),
+		Request: req,
 	}, nil
+
 }
 
 func startGRPCServer(hostPort string) error {
@@ -59,16 +54,13 @@ func startGRPCServer(hostPort string) error {
 }
 
 func main() {
-
 	grpcHostPort := net.JoinHostPort("0.0.0.0", grpcPort)
-
 	go func() {
 		err := startGRPCServer(grpcHostPort)
 		if err != nil {
 			logger.Fatalf("Failed to start gRPC server: %v", err)
 		}
 	}()
-
 	logger.Println("Server started...")
 	select {}
 }

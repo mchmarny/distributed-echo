@@ -16,18 +16,40 @@
   ],
   "paths": {},
   "definitions": {
+    "pingRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sent": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "target": {
+          "$ref": "#/definitions/pingTarget"
+        }
+      }
+    },
     "pingResponse": {
       "type": "object",
       "properties": {
-        "request_id": {
+        "request": {
+          "$ref": "#/definitions/pingRequest"
+        }
+      }
+    },
+    "pingTarget": {
+      "type": "object",
+      "properties": {
+        "region": {
           "type": "string"
         },
-        "target": {
+        "uri": {
           "type": "string"
         },
-        "processed_on": {
-          "type": "string",
-          "format": "date-time"
+        "port": {
+          "type": "string"
         }
       }
     }
