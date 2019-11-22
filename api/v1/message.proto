@@ -1,27 +1,29 @@
 syntax = "proto3";
 
-package ping;
+package echo;
 
 import "google/protobuf/timestamp.proto";
 
-service PingService {
-  rpc Ping(Request) returns (Response) {}
+service EchoService {
+  rpc Echo(RequestMessage) returns (ResponseMessage) {}
 }
 
-message Request {
-  string id = 1;
-  google.protobuf.Timestamp sent = 2;
-  Target target = 3;
+message RequestMessage {
+  google.protobuf.Timestamp sent = 1;
+  EchoNode source = 2;
+  EchoNode target = 3;
+  repeated EchoNode nodes = 4;
 }
 
-message Target {
+message EchoNode {
   string region = 1;
   string uri = 2;
   string port = 3;
 }
 
 
-message Response {
-  Request request = 1;
+message ResponseMessage {
+  string id = 1;
+  RequestMessage request = 2;
 }
 

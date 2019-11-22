@@ -22,38 +22,41 @@ var (
 )
 
 func main() {
-	flag.Parse()
 
-	ctx := context.Background()
+	flag.Parse()
 
 	data, err := ioutil.ReadFile(*path)
 	if err != nil {
 		logger.Printf("error reading file: %v", err)
 	}
 
-	targets := []pb.Target{}
-	err = yaml.Unmarshal([]byte(data), &targets)
+	nodes := []*pb.EchoNode{}
+	err = yaml.Unmarshal([]byte(data), &nodes)
 	if err != nil {
 		logger.Fatalf("error: %v", err)
 	}
 
-	logger.Printf("Targets: %d", len(targets))
-	for _, t := range targets {
-		// TODO: goroutine
-		ping(ctx, t)
+	logger.Printf("Targets: %d", len(nodes))
+	ctx := context.Background()
+	for _, t := range nodes {
+		startEcho(ctx, t, nodes)
 	}
 
 }
 
-func ping(ctx context.Context, target pb.Target) {
+func startEcho(ctx context.Context, target *pb.EchoNode, nodes []*pb.EchoNode) {
 
-	logger.Printf("Ping:\n   %s", target.GetRegion())
-	resp, err := client.PingClient(&target)
+	req := &pb.RequestMessage{
+		Sent:   ptypes.TimestampNow(),
+		Target: target,
+		Nodes:  nodes,
+	}
+
+	logger.Printf("Pinging:\n   %s", req)
+	resp, err := client.Ping(req)
 	if err != nil {
 		logger.Fatalf("error while executing Ping: %v", err)
 	}
-
-	logger.Printf("Response:\n  %+v", resp)
 
 	sentOn, err := ptypes.Timestamp(resp.GetRequest().GetSent())
 	if err != nil {
@@ -62,11 +65,7 @@ func ping(ctx context.Context, target pb.Target) {
 	now := time.Now()
 	dur := now.Sub(sentOn)
 
-	logger.Printf("Duration:\n  %v", dur)
-
-	err = client.CompletePing(ctx, *dbName, resp.GetRequest().GetId(), now)
-	if err != nil {
-		logger.Printf("error while completing ping: %v", err)
-	}
+	logger.Printf("Echo: %s from %s (Duration: %v)\n ",
+		resp.GetId(), resp.GetRequest().GetTarget().GetRegion(), dur)
 
 }

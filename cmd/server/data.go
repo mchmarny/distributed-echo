@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"context"
@@ -9,8 +9,7 @@ import (
 	"cloud.google.com/go/spanner"
 )
 
-// SavePing saves the ping results into DB
-func SavePing(ctx context.Context, dbName, id, region string, sent time.Time) error {
+func savePing(ctx context.Context, dbName, id, region, source string, sent time.Time) error {
 
 	dbClient, err := spanner.NewClient(ctx, dbName)
 	if err != nil {
@@ -24,6 +23,7 @@ func SavePing(ctx context.Context, dbName, id, region string, sent time.Time) er
 			Params: map[string]interface{}{
 				"id":     id,
 				"region": region,
+				"source": source,
 				"sent":   sent,
 			},
 		}
@@ -43,8 +43,7 @@ func SavePing(ctx context.Context, dbName, id, region string, sent time.Time) er
 
 }
 
-// CompletePing updates previously saved ping in the BD
-func CompletePing(ctx context.Context, dbName, id string, completed time.Time) error {
+func saveEcho(ctx context.Context, dbName, id string, completed time.Time) error {
 
 	dbClient, err := spanner.NewClient(ctx, dbName)
 	if err != nil {

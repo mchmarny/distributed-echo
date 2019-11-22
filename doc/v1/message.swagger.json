@@ -16,30 +16,7 @@
   ],
   "paths": {},
   "definitions": {
-    "pingRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "sent": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "target": {
-          "$ref": "#/definitions/pingTarget"
-        }
-      }
-    },
-    "pingResponse": {
-      "type": "object",
-      "properties": {
-        "request": {
-          "$ref": "#/definitions/pingRequest"
-        }
-      }
-    },
-    "pingTarget": {
+    "echoEchoNode": {
       "type": "object",
       "properties": {
         "region": {
@@ -50,6 +27,38 @@
         },
         "port": {
           "type": "string"
+        }
+      }
+    },
+    "echoRequestMessage": {
+      "type": "object",
+      "properties": {
+        "sent": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "$ref": "#/definitions/echoEchoNode"
+        },
+        "target": {
+          "$ref": "#/definitions/echoEchoNode"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/echoEchoNode"
+          }
+        }
+      }
+    },
+    "echoResponseMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/definitions/echoRequestMessage"
         }
       }
     }

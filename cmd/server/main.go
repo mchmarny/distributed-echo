@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"time"
 
 	"os"
 
@@ -11,7 +13,7 @@ import (
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
 	"github.com/mchmarny/gcputil/env"
 
-	"github.com/mchmarny/distributed-echo/pkg/client"
+	"github.com/google/uuid"
 	"github.com/mchmarny/gcputil/metric"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
@@ -24,21 +26,20 @@ var (
 	dbName   = env.MustGetEnvVar("DB_NAME", "")
 )
 
-type pingService struct{}
+type echoService struct{}
 
-func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+func (s *echoService) Echo(ctx context.Context, req *pb.RequestMessage) (*pb.ResponseMessage, error) {
 
 	// validation
 	if req == nil {
 		return nil, errors.New("nil request")
 	}
 
-	if req.GetId() == "" {
-		return nil, errors.New("nil Id")
-	}
-
 	if req.GetTarget() == nil {
-		return nil, errors.New("nil Target")
+		return nil, errors.New("nil target")
+	}
+	if req.GetNodes() == nil {
+		return nil, errors.New("nil Id")
 	}
 	logger.Printf("request: %+v", req)
 
@@ -49,8 +50,29 @@ func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, 
 		return nil, fmt.Errorf("invalid request sent on: %v", err)
 	}
 
+	// initial ping to start the conversation
+	if req.GetSource() == nil {
+		rm := &pb.RequestMessage{
+			Source: req.GetTarget(),
+			Nodes:  req.GetNodes(),
+		}
+
+		// set target to a random node that is not self
+		randNode, err := getRundomNode(req.GetNodes(), req.GetTarget(), nil)
+		if err != nil {
+			return nil, fmt.Errorf("invalid selecting random node: %v", err)
+		}
+		rm.Target = randNode
+
+		return &pb.ResponseMessage{
+			Id:      uuid.New().String(),
+			Request: rm,
+		}, nil
+	} // done checking if new
+
 	// save
-	err = client.SavePing(ctx, dbName, req.GetId(), req.GetTarget().GetRegion(), sentOn)
+	err = savePing(ctx, dbName, uuid.New().String(), req.GetTarget().GetRegion(),
+		req.GetSource().GetRegion(), sentOn)
 	if err != nil {
 		return nil, fmt.Errorf("error while saving request: %v", err)
 	}
@@ -62,10 +84,28 @@ func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, 
 	}
 
 	// response
-	return &pb.Response{
+	return &pb.ResponseMessage{
 		Request: req,
 	}, nil
 
+}
+
+func getRundomNode(nodes []*pb.EchoNode, self *pb.EchoNode, source *pb.EchoNode) (node *pb.EchoNode, err error) {
+	maxLoops := 10
+	i := 0
+	for {
+		i++
+		rand.Seed(time.Now().UnixNano())
+		randIndex := rand.Intn(len(nodes))
+		randNode := nodes[randIndex]
+		if randNode.GetRegion() != self.GetRegion() &&
+			source != nil && randNode.GetRegion() != source.GetRegion() {
+			return randNode, nil
+		}
+		if i >= maxLoops {
+			return nil, errors.New("max number of rundom node selections reached")
+		}
+	}
 }
 
 func startGRPCServer(hostPort string) error {
@@ -74,7 +114,7 @@ func startGRPCServer(hostPort string) error {
 		return errors.Wrapf(err, "Failed to listen on %s: %v", hostPort, err)
 	}
 	grpcServer := grpc.NewServer()
-	pb.RegisterPingServiceServer(grpcServer, &pingService{})
+	pb.RegisterEchoServiceServer(grpcServer, &echoService{})
 	return grpcServer.Serve(listener)
 }
 
