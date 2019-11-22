@@ -4,6 +4,8 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
+# github.com/google/uuid v1.1.1
+github.com/google/uuid
 # github.com/mchmarny/gcputil v0.2.1
 github.com/mchmarny/gcputil/env
 # github.com/pkg/errors v0.8.1

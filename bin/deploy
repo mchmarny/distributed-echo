@@ -5,9 +5,20 @@ DIR="$(dirname "$0")"
 
 # TODO: Service account identity
 
-gcloud run deploy $SERVICE_NAME \
-  --image "gcr.io/cloudylabs-public/${SERVICE_NAME}:${SERVICE_IMAGE_VERSION}" \
-  --allow-unauthenticated \
-  --platform managed \
-  --region $SERVICE_REGION \
-  --labels "service-region=${SERVICE_REGION}"
+for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
+do
+	echo "deploying to ${SERVICE_REGION}"
+  gcloud run deploy $SERVICE_NAME \
+    --image "gcr.io/cloudylabs-public/${SERVICE_NAME}:${SERVICE_IMAGE_VERSION}" \
+    --allow-unauthenticated \
+    --platform managed \
+    --timeout 15m \
+    --region $SERVICE_REGION \
+    --labels "region=${SERVICE_REGION}" \
+    --service-account "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
+done
+
+
+gcloud beta run services add-iam-policy-binding $SERVICE_NAME \
+  --member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
+  --role roles/run.invoker
