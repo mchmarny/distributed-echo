@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 
@@ -9,10 +10,10 @@ import (
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
 	"github.com/mchmarny/gcputil/env"
 
+	"github.com/mchmarny/gcputil/metric"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"github.com/mchmarny/gcputil/metric"
 )
 
 var (
@@ -24,6 +25,7 @@ type pingService struct{}
 
 func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, error) {
 
+	// validation
 	if req == nil {
 		return nil, errors.New("nil request")
 	}
@@ -35,14 +37,15 @@ func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, 
 	if req.GetTarget() == nil {
 		return nil, errors.New("nil Target")
 	}
-
 	logger.Printf("request: %+v", req)
-	
+
+	// metrics
 	c, err := metric.NewClient(ctx)
 	if err = c.Publish(ctx, req.GetTarget().GetRegion(), "ping", 1); err != nil {
 		return nil, fmt.Errorf("error while publishing metrics: %v", err)
 	}
 
+	// response
 	return &pb.Response{
 		Request: req,
 	}, nil

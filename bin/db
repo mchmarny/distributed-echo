@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+gcloud spanner instances create $SERVICE_NAME \
+  --config $DB_REGION \
+  --description "${SERVICE_NAME}-custer" \
+  --nodes $DB_NODES
+
+gcloud spanner databases create "echo" \
+  --instance $SERVICE_NAME
+
+gcloud spanner databases ddl update "echo" \
+  --instance $SERVICE_NAME \
+  --ddl "CREATE TABLE pings (id STRING(MAX) NOT NULL,completed TIMESTAMP,region STRING(MAX) NOT NULL,sent TIMESTAMP NOT NULL,) PRIMARY KEY (id)"
+
+gcloud spanner databases ddl update "echo" \
+  --instance $SERVICE_NAME \
+  --ddl "CREATE INDEX ping_region_index ON pings (region)"
