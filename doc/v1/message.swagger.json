@@ -22,7 +22,7 @@
         "request_id": {
           "type": "string"
         },
-        "target_name": {
+        "target": {
           "type": "string"
         },
         "processed_on": {

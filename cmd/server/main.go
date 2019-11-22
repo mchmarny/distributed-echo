@@ -24,9 +24,26 @@ var (
 type pingService struct{}
 
 func (s *pingService) Ping(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+
+	if req == nil {
+		return nil, errors.New("nil request")
+	}
+
+	if req.RequestId == "" {
+		return nil, errors.New("nil RequestId")
+	}
+
+	if req.SourceName == "" {
+		return nil, errors.New("nil SourceName")
+	}
+
+	if len(req.Targets) == 0 {
+		return nil, errors.New("empty Targets")
+	}
+
 	return &pb.Response{
-		RequestId:   "",
-		TargetName:  "",
+		RequestId:   req.RequestId,
+		Target:      req.Targets[0], // TODO: Rnd select one and write to DB
 		ProcessedOn: ptypes.TimestampNow(),
 	}, nil
 }

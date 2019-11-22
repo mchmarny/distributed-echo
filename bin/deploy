@@ -3,10 +3,11 @@
 DIR="$(dirname "$0")"
 . "${DIR}/config"
 
-gcloud alpha run deploy $SERVICE \
-	--image "gcr.io/${PROJECT}/${SERVICE}:${SERVICE_VERSION}" \
-	--allow-unauthenticated \
-	--service-account $SERVICE_ACCOUNT \
-    --platform managed \
-	--region $SERVICE_REGION \
-	--labels "service-version=${SERVICE_VERSION}"
+# TODO: Service account identity
+
+gcloud run deploy $SERVICE_NAME \
+  --image "gcr.io/cloudylabs-public/${SERVICE_NAME}:${SERVICE_IMAGE_VERSION}" \
+  --allow-unauthenticated \
+  --platform managed \
+  --region $SERVICE_REGION \
+  --labels "service-region=${SERVICE_REGION}"
