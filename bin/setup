@@ -1,0 +1,9 @@
+#!/bin/bash
+
+gcloud services enable --quiet \
+    compute.googleapis.com \
+    cloudbuild.googleapis.com \
+    pubsub.googleapis.com \
+    iam.googleapis.com \
+    run.googleapis.com
+
