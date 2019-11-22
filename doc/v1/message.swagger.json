@@ -16,80 +16,20 @@
   ],
   "paths": {},
   "definitions": {
-    "messageContent": {
+    "pingResponse": {
       "type": "object",
       "properties": {
-        "index": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
+        "request_id": {
           "type": "string"
         },
-        "received_on": {
+        "target_name": {
+          "type": "string"
+        },
+        "processed_on": {
           "type": "string",
           "format": "date-time"
         }
       }
-    },
-    "messageResponse": {
-      "type": "object",
-      "properties": {
-        "content": {
-          "$ref": "#/definitions/messageContent"
-        }
-      }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "type_url": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "runtimeStreamError": {
-      "type": "object",
-      "properties": {
-        "grpc_code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "http_code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "http_status": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    }
-  },
-  "x-stream-definitions": {
-    "messageResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "$ref": "#/definitions/messageResponse"
-        },
-        "error": {
-          "$ref": "#/definitions/runtimeStreamError"
-        }
-      },
-      "title": "Stream result of messageResponse"
     }
   }
 }
