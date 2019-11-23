@@ -16,7 +16,36 @@
   ],
   "paths": {},
   "definitions": {
-    "echoEchoNode": {
+    "echoEchoRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sent": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "$ref": "#/definitions/echoNode"
+        },
+        "target": {
+          "$ref": "#/definitions/echoNode"
+        }
+      }
+    },
+    "echoEchoResponse": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/echoEchoRequest"
+        },
+        "status": {
+          "$ref": "#/definitions/echoStatusResponse"
+        }
+      }
+    },
+    "echoNode": {
       "type": "object",
       "properties": {
         "region": {
@@ -30,35 +59,15 @@
         }
       }
     },
-    "echoRequestMessage": {
+    "echoStatusResponse": {
       "type": "object",
       "properties": {
-        "sent": {
-          "type": "string",
-          "format": "date-time"
+        "code": {
+          "type": "integer",
+          "format": "int32"
         },
-        "source": {
-          "$ref": "#/definitions/echoEchoNode"
-        },
-        "target": {
-          "$ref": "#/definitions/echoEchoNode"
-        },
-        "nodes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/echoEchoNode"
-          }
-        }
-      }
-    },
-    "echoResponseMessage": {
-      "type": "object",
-      "properties": {
-        "id": {
+        "detail": {
           "type": "string"
-        },
-        "request": {
-          "$ref": "#/definitions/echoRequestMessage"
         }
       }
     }

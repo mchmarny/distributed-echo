@@ -1,17 +1,14 @@
 #!/bin/bash
 
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
 gcloud services enable --quiet \
     compute.googleapis.com \
     cloudbuild.googleapis.com \
     pubsub.googleapis.com \
     iam.googleapis.com \
     run.googleapis.com
-
-
-#!/bin/bash
-
-DIR="$(dirname "$0")"
-. "${DIR}/config"
 
 # accounts
 HAS_SA=$(gcloud iam service-accounts list \
@@ -29,6 +26,10 @@ fi
 gcloud projects add-iam-policy-binding $PROJECT \
     --member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
     --role roles/run.invoker
+
+gcloud projects add-iam-policy-binding $PROJECT \
+    --member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
+    --role roles/spanner.databaseUser
 
 gcloud projects add-iam-policy-binding $PROJECT \
 	--member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \

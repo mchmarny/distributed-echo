@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package echo;
+
+import "google/protobuf/timestamp.proto";
+
+service EchoService {
+  rpc Broadcast(BroadcastMessage) returns (BroadcastResult) {}
+  rpc Echo(EchoMessage) returns (EchoMessage) {}
+}
+
+message BroadcastMessage {
+  Node self = 1;
+  repeated Node targets = 2;
+}
+
+message BroadcastResult {
+  int32 count = 1;
+}
+
+message Node {
+  string region = 1;
+  string uri = 2;
+  string port = 3;
+}
+
+message EchoMessage {
+  string id = 1;
+  google.protobuf.Timestamp sent = 2;
+  Node source = 3;
+  Node target = 4;
+}
+

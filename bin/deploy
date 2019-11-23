@@ -3,8 +3,8 @@
 DIR="$(dirname "$0")"
 . "${DIR}/config"
 
-# TODO: Service account identity
 
+# deply service to all designated regions
 for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
 do
 	echo "deploying to ${SERVICE_REGION}"
@@ -15,10 +15,11 @@ do
     --timeout 15m \
     --region $SERVICE_REGION \
     --labels "region=${SERVICE_REGION}" \
+    --set-env-vars "DB_PATH=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo" \
     --service-account "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
 done
 
-
+# bind the serivice account to the depliyed service, in all regions
 gcloud beta run services add-iam-policy-binding $SERVICE_NAME \
   --member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
   --role roles/run.invoker
