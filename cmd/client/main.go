@@ -1,61 +1,104 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
 
-	ptypes "github.com/golang/protobuf/ptypes"
+	"crypto/tls"
+	"errors"
+	"fmt"
+
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
-	"github.com/mchmarny/distributed-echo/pkg/client"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+
 	"gopkg.in/yaml.v2"
 )
 
 var (
 	logger = log.New(os.Stdout, "", 0)
-	path   = flag.String("targets", "", "Path to server targets file")
-	source = flag.String("source", "client", "Name of the invoking client ['client']")
+
+	// ConfigFilePath contains all targets
+	ConfigFilePath = flag.String("file", "", "Path to server targets file")
+
+	// AppVersion is set at compile
+	AppVersion = "0.0.0-default"
+
+	// EchoTimeout is the max number of seconds echo service will wait for response
+	EchoTimeout = 300 * time.Second
 )
 
 func main() {
+
 	flag.Parse()
 
-	data, err := ioutil.ReadFile(*path)
+	logger.Printf("version: %s", AppVersion)
+
+	data, err := ioutil.ReadFile(*ConfigFilePath)
 	if err != nil {
 		logger.Printf("error reading file: %v", err)
 	}
 
-	targets := []pb.Target{}
-	err = yaml.Unmarshal([]byte(data), &targets)
+	nodes := []*pb.Node{}
+	err = yaml.Unmarshal([]byte(data), &nodes)
 	if err != nil {
 		logger.Fatalf("error: %v", err)
 	}
 
-	logger.Printf("Targets: %d", len(targets))
-	for _, t := range targets {
-		ping(t)
-	}
+	logger.Printf("targets: %d", len(nodes))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
+	for _, t := range nodes {
+		logger.Printf("broadcasting: %+v", t)
+		r := submitBroadcast(ctx, &pb.BroadcastMessage{
+			Self:    t,
+			Targets: nodes,
+		})
+		logger.Printf("error[%s]: %v", r.node.GetRegion(), r.err)
+	}
 }
 
-func ping(target pb.Target) {
+type broadcastResult struct {
+	node *pb.Node
+	err  error
+}
 
-	logger.Printf("Ping:\n   %s", target.GetRegion())
-	resp, err := client.PingClient(&target)
-	if err != nil {
-		logger.Fatalf("error while executing Ping: %v", err)
+func submitBroadcast(ctx context.Context, msg *pb.BroadcastMessage) *broadcastResult {
+
+	if msg == nil {
+		return &broadcastResult{
+			node: msg.GetSelf(),
+			err:  errors.New("nil BroadcastMessage"),
+		}
 	}
 
-	logger.Printf("Response:\n  %+v", resp)
-
-	sentOn, err := ptypes.Timestamp(resp.GetRequest().GetSent())
+	var opts []grpc.DialOption
+	cred := credentials.NewTLS(&tls.Config{
+		InsecureSkipVerify: false,
+	})
+	opts = append(opts, grpc.WithTransportCredentials(cred))
+	uri := fmt.Sprintf("%s:%s", msg.GetSelf().GetUri(), msg.GetSelf().GetPort())
+	conn, err := grpc.Dial(uri, opts...)
 	if err != nil {
-		logger.Fatalf("invalid response sent on: %v", err)
+		return &broadcastResult{
+			node: msg.GetSelf(),
+			err:  fmt.Errorf("failed to dial %s: %v", uri, err),
+		}
 	}
-	dur := time.Now().Sub(sentOn)
-
-	logger.Printf("Duration:\n  %v", dur)
+	defer conn.Close()
+	client := pb.NewEchoServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), EchoTimeout)
+	defer cancel()
+	_, err = client.Broadcast(ctx, msg)
+	return &broadcastResult{
+		node: msg.GetSelf(),
+		err:  err,
+	}
 
 }

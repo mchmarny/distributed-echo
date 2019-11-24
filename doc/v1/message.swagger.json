@@ -16,7 +16,7 @@
   ],
   "paths": {},
   "definitions": {
-    "pingRequest": {
+    "echoEchoRequest": {
       "type": "object",
       "properties": {
         "id": {
@@ -26,20 +26,26 @@
           "type": "string",
           "format": "date-time"
         },
+        "source": {
+          "$ref": "#/definitions/echoNode"
+        },
         "target": {
-          "$ref": "#/definitions/pingTarget"
+          "$ref": "#/definitions/echoNode"
         }
       }
     },
-    "pingResponse": {
+    "echoEchoResponse": {
       "type": "object",
       "properties": {
         "request": {
-          "$ref": "#/definitions/pingRequest"
+          "$ref": "#/definitions/echoEchoRequest"
+        },
+        "status": {
+          "$ref": "#/definitions/echoStatusResponse"
         }
       }
     },
-    "pingTarget": {
+    "echoNode": {
       "type": "object",
       "properties": {
         "region": {
@@ -49,6 +55,18 @@
           "type": "string"
         },
         "port": {
+          "type": "string"
+        }
+      }
+    },
+    "echoStatusResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "detail": {
           "type": "string"
         }
       }

@@ -4,6 +4,6 @@ DIR="$(dirname "$0")"
 . "${DIR}/config"
 
 
-bin/client --targets etc/demo.yaml --source test
+bin/client --file etc/demo.yaml
 
 

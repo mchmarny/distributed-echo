@@ -1,0 +1,61 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "service.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "echoBroadcastResult": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "echoEchoMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sent": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "$ref": "#/definitions/echoNode"
+        },
+        "target": {
+          "$ref": "#/definitions/echoNode"
+        }
+      }
+    },
+    "echoNode": {
+      "type": "object",
+      "properties": {
+        "region": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "port": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
