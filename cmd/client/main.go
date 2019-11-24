@@ -52,7 +52,7 @@ func main() {
 
 	logger.Printf("targets: %d", len(nodes))
 	ctx, cancel := context.WithCancel(context.Background())
-	// defer cancel()
+	defer cancel()
 
 	results := make(chan *broadcastResult, len(nodes))
 		
@@ -67,15 +67,15 @@ func main() {
 		}()
 	}
 	
-	loop:
+	//loop:
 	for {
 	  select {
 	  case r := <-results:
 	    logger.Printf("error[%s]: %v", r.node.GetRegion(), r.err)
-	  case <-cancel
-	    logger.Println("closing down...")
-		close(results)
-	    break loop
+// 	  case <-cancel:
+// 	    logger.Println("closing down...")
+// 			close(results)
+// 	    break loop
 	  }
 	}
 	
