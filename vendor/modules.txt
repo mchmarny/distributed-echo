@@ -42,7 +42,7 @@ github.com/googleapis/gax-go/v2
 github.com/jstemmer/go-junit-report
 github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
-# github.com/mchmarny/gcputil v0.3.0
+# github.com/mchmarny/gcputil v0.3.1
 github.com/mchmarny/gcputil/env
 github.com/mchmarny/gcputil/meta
 github.com/mchmarny/gcputil/metric

@@ -63,6 +63,7 @@ func execEcho(ctx context.Context, self *pb.Node, target *pb.Node) *pb.Broadcast
 		Duration: 0,
 	}
 
+	// setup connection
 	var opts []grpc.DialOption
 	cred := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: false,
@@ -77,10 +78,13 @@ func execEcho(ctx context.Context, self *pb.Node, target *pb.Node) *pb.Broadcast
 	defer conn.Close()
 	client := pb.NewEchoServiceClient(conn)
 
+	// client message
 	msgIn := &pb.EchoMessage{
 		From: self.GetRegion(),
 		Sent: ptypes.TimestampNow(),
 	}
+
+	// call remote service
 	logger.Printf("submitting echo: %+v", msgIn)
 	started := time.Now()
 	msgOut, err := client.Echo(ctx, msgIn)
@@ -91,26 +95,29 @@ func execEcho(ctx context.Context, self *pb.Node, target *pb.Node) *pb.Broadcast
 	finished := time.Now()
 	result.Duration = finished.Sub(started).Milliseconds()
 
+	// make sure echo returned the same message
 	if msgOut.GetFrom() != msgIn.GetFrom() {
 		result.Error = fmt.Sprintf("unexpected echo from %s (want %s, got %s)",
 			uri, msgIn.GetFrom(), msgOut.GetFrom())
 		return result
 	}
 
+	// debug into server side
 	logger.Printf("echo-ping from: %s to: %s (duration: %v)\n ",
 		msgIn.GetFrom(), msgOut.GetFrom(), result.Duration)
 
+	// save to db
 	if err = save(ctx, dbPath, uuid.New().String(), msgIn.GetFrom(), msgOut.GetFrom(),
 		started, finished, result.Duration); err != nil {
 		result.Error = fmt.Sprintf("error while saving request %s: %v", uri, err)
 		return result
 	}
 
+	// metrics
 	labels := map[string]string{
 		"source": msgIn.GetFrom(),
 		"target": msgOut.GetFrom(),
 	}
-
 	if err = metric.MetricClient(ctx).Publish(ctx, "echo-duration", result.Duration, labels); err != nil {
 		result.Error = fmt.Sprintf("error while saving echo-duration metric %s: %v", uri, err)
 		return result
