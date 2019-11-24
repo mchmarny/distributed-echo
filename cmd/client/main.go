@@ -52,16 +52,33 @@ func main() {
 
 	logger.Printf("targets: %d", len(nodes))
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// defer cancel()
 
+	results := make(chan *broadcastResult, len(nodes))
+		
 	for _, t := range nodes {
-		logger.Printf("broadcasting: %+v", t)
-		r := submitBroadcast(ctx, &pb.BroadcastMessage{
-			Self:    t,
-			Targets: nodes,
-		})
-		logger.Printf("error[%s]: %v", r.node.GetRegion(), r.err)
+		go func(){
+			logger.Printf("broadcasting: %+v", t)
+			r := submitBroadcast(ctx, &pb.BroadcastMessage{
+				Self:    t,
+				Targets: nodes,
+			}) 
+			results <- r
+		}()
 	}
+	
+	loop:
+	for {
+	  select {
+	  case r := <-results:
+	    logger.Printf("error[%s]: %v", r.node.GetRegion(), r.err)
+	  case <-cancel
+	    logger.Println("closing down...")
+		close(results)
+	    break loop
+	  }
+	}
+	
 }
 
 type broadcastResult struct {
