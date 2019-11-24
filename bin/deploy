@@ -17,9 +17,12 @@ do
     --labels "region=${SERVICE_REGION}" \
     --set-env-vars "DB_PATH=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo" \
     --service-account "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
-done
 
-# bind the serivice account to the depliyed service, in all regions
-gcloud beta run services add-iam-policy-binding $SERVICE_NAME \
-  --member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
-  --role roles/run.invoker
+  # bind the serivice account to the depliyed service, in all regions
+	gcloud beta run services add-iam-policy-binding $SERVICE_NAME \
+	  --platform managed \
+		--region $SERVICE_REGION \
+		--member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
+		--role roles/run.invoker
+
+done

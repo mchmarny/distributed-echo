@@ -27,7 +27,7 @@ func save(ctx context.Context, dbPath, id, target, source string, sent, complete
 				"source":    source,
 				"sent":      sent,
 				"completed": completed,
-				"duration":  duration.Milliseconds(),
+				"duration":  duration.Microseconds(),
 			},
 		}
 
