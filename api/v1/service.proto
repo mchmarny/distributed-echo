@@ -5,7 +5,7 @@ package echo;
 import "google/protobuf/timestamp.proto";
 
 service EchoService {
-  rpc Broadcast(BroadcastMessage) returns (BroadcastResult) {}
+  rpc Broadcast(BroadcastMessage) returns (BroadcastResults) {}
   rpc Echo(EchoMessage) returns (EchoMessage) {}
 }
 
@@ -15,6 +15,17 @@ message BroadcastMessage {
 }
 
 message BroadcastResult {
+  Node source = 1;
+  Node target = 2;
+  int64 duration = 3;
+  string error = 4;
+}
+
+message BroadcastResults {
+  repeated BroadcastResult results = 1;
+}
+
+message NodeResult {
   int32 count = 1;
 }
 
@@ -25,9 +36,8 @@ message Node {
 }
 
 message EchoMessage {
-  string id = 1;
+  string from = 1;
   google.protobuf.Timestamp sent = 2;
-  Node source = 3;
-  Node target = 4;
 }
+
 

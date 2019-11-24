@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"crypto/tls"
-	"errors"
 	"fmt"
 
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
@@ -37,7 +36,7 @@ func main() {
 
 	flag.Parse()
 
-	logger.Printf("version: %s", AppVersion)
+	logger.Printf("distributed-echo (v%s)", AppVersion)
 
 	data, err := ioutil.ReadFile(*ConfigFilePath)
 	if err != nil {
@@ -50,72 +49,58 @@ func main() {
 		logger.Fatalf("error: %v", err)
 	}
 
-	logger.Printf("targets: %d", len(nodes))
+	logger.Printf("broadcast targets: %d\n", len(nodes))
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	results := make(chan *broadcastResult, len(nodes))
-		
 	for _, t := range nodes {
-		go func(){
-			logger.Printf("broadcasting: %+v", t)
-			r := submitBroadcast(ctx, &pb.BroadcastMessage{
-				Self:    t,
-				Targets: nodes,
-			}) 
-			results <- r
-		}()
+		submitBroadcast(ctx, t, nodes)
 	}
-	
-	//loop:
-	for {
-	  select {
-	  case r := <-results:
-	    logger.Printf("error[%s]: %v", r.node.GetRegion(), r.err)
-// 	  case <-cancel:
-// 	    logger.Println("closing down...")
-// 			close(results)
-// 	    break loop
-	  }
-	}
-	
+
 }
 
-type broadcastResult struct {
-	node *pb.Node
-	err  error
-}
+func submitBroadcast(ctx context.Context, from *pb.Node, to []*pb.Node) {
 
-func submitBroadcast(ctx context.Context, msg *pb.BroadcastMessage) *broadcastResult {
-
-	if msg == nil {
-		return &broadcastResult{
-			node: msg.GetSelf(),
-			err:  errors.New("nil BroadcastMessage"),
-		}
-	}
+	logger.Println()
 
 	var opts []grpc.DialOption
 	cred := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: false,
 	})
 	opts = append(opts, grpc.WithTransportCredentials(cred))
-	uri := fmt.Sprintf("%s:%s", msg.GetSelf().GetUri(), msg.GetSelf().GetPort())
+	uri := fmt.Sprintf("%s:%s", from.GetUri(), from.GetPort())
 	conn, err := grpc.Dial(uri, opts...)
 	if err != nil {
-		return &broadcastResult{
-			node: msg.GetSelf(),
-			err:  fmt.Errorf("failed to dial %s: %v", uri, err),
-		}
+		logger.Printf("   failed to dial %s: %v", uri, err)
+		return
 	}
 	defer conn.Close()
+
 	client := pb.NewEchoServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), EchoTimeout)
-	defer cancel()
-	_, err = client.Broadcast(ctx, msg)
-	return &broadcastResult{
-		node: msg.GetSelf(),
-		err:  err,
+	br, err := client.Broadcast(ctx, &pb.BroadcastMessage{
+		Self:    from,
+		Targets: to,
+	})
+
+	if err != nil {
+		logger.Printf("   broadest error[%s]: %v", from, err)
+		return
+	}
+
+	for _, nr := range br.GetResults() {
+		if nr.GetError() == "" {
+			logger.Printf("   %s -> %s: %dms",
+				nr.GetSource().GetRegion(),
+				nr.GetTarget().GetRegion(),
+				nr.GetDuration(),
+			)
+		} else {
+			logger.Printf("   %s -> %s error: %s",
+				nr.GetSource().GetRegion(),
+				nr.GetTarget().GetRegion(),
+				nr.GetError(),
+			)
+		}
 	}
 
 }

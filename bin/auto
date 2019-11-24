@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+bin/image
+
+bin/deploy
+
+bin/build
+
+bin/run

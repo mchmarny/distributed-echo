@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 	"os"
+	"time"
 
 	ptypes "github.com/golang/protobuf/ptypes"
+	"github.com/google/uuid"
 	pb "github.com/mchmarny/distributed-echo/pkg/api/v1"
 	"github.com/mchmarny/gcputil/env"
 	"github.com/mchmarny/gcputil/metric"
 
 	"crypto/tls"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -29,21 +29,21 @@ var (
 
 type echoService struct{}
 
-func (s *echoService) Broadcast(ctx context.Context, in *pb.BroadcastMessage) (*pb.BroadcastResult, error) {
+func (s *echoService) Broadcast(ctx context.Context, in *pb.BroadcastMessage) (*pb.BroadcastResults, error) {
 
 	if in == nil {
 		return nil, errors.New("nil BroadcastMessage")
 	}
 
-	for _, t := range in.GetTargets() {
-		if err := execEcho(ctx, in.GetSelf(), t); err != nil {
-			return nil, fmt.Errorf("error on echo: %v", err)
-		}
+	out := &pb.BroadcastResults{
+		Results: make([]*pb.BroadcastResult, len(in.GetTargets())),
 	}
-	
-	return &pb.BroadcastResult{
-		Count: int32(len(in.GetTargets())),
-	}, nil
+
+	for i, t := range in.GetTargets() {
+		out.Results[i] = execEcho(ctx, in.GetSelf(), t)
+	}
+
+	return out, nil
 
 }
 
@@ -55,13 +55,12 @@ func (s *echoService) Echo(ctx context.Context, req *pb.EchoMessage) (resp *pb.E
 	return req, nil
 }
 
-func execEcho(ctx context.Context, self *pb.Node, target *pb.Node) error {
+func execEcho(ctx context.Context, self *pb.Node, target *pb.Node) *pb.BroadcastResult {
 
-	msg := &pb.EchoMessage{
-		Id:     uuid.New().String(),
-		Sent:   ptypes.TimestampNow(),
-		Source: self,
-		Target: target,
+	result := &pb.BroadcastResult{
+		Source:   self,
+		Target:   target,
+		Duration: 0,
 	}
 
 	var opts []grpc.DialOption
@@ -72,40 +71,52 @@ func execEcho(ctx context.Context, self *pb.Node, target *pb.Node) error {
 	uri := fmt.Sprintf("%s:%s", target.GetUri(), target.GetPort())
 	conn, err := grpc.Dial(uri, opts...)
 	if err != nil {
-		return fmt.Errorf("failed to dial %s: %v", uri, err)
+		result.Error = fmt.Sprintf("failed to dial %s: %v", uri, err)
+		return result
 	}
 	defer conn.Close()
 	client := pb.NewEchoServiceClient(conn)
 
-	logger.Printf("submitting echo: %+v", msg)
-	_, err = client.Echo(ctx, msg)
+	msgIn := &pb.EchoMessage{
+		From: self.GetRegion(),
+		Sent: ptypes.TimestampNow(),
+	}
+	logger.Printf("submitting echo: %+v", msgIn)
+	started := time.Now()
+	msgOut, err := client.Echo(ctx, msgIn)
 	if err != nil {
-		logger.Printf("error while executing echo: %v", err)
-		return err
+		result.Error = fmt.Sprintf("error while executing echo %s: %v", uri, err)
+		return result
+	}
+	finished := time.Now()
+	result.Duration = finished.Sub(started).Milliseconds()
+
+	if msgOut.GetFrom() != msgIn.GetFrom() {
+		result.Error = fmt.Sprintf("unexpected echo from %s (want %s, got %s)",
+			uri, msgIn.GetFrom(), msgOut.GetFrom())
+		return result
 	}
 
-	completedOn := time.Now()
-	sentOn, _ := ptypes.Timestamp(msg.GetSent())
-	dur := completedOn.Sub(sentOn)
+	logger.Printf("echo-ping from: %s to: %s (duration: %v)\n ",
+		msgIn.GetFrom(), msgOut.GetFrom(), result.Duration)
 
-	logger.Printf("echo-ping: %s from %s (Duration: %v)\n ",
-		msg.GetId(), msg.GetTarget().GetRegion(), dur)
-
-	if err = save(ctx, dbPath, msg.GetId(), target.GetRegion(),
-		msg.GetSource().GetRegion(), sentOn, completedOn, dur); err != nil {
-		return fmt.Errorf("error while saving request: %v", err)
+	if err = save(ctx, dbPath, uuid.New().String(), msgIn.GetFrom(), msgOut.GetFrom(),
+		started, finished, result.Duration); err != nil {
+		result.Error = fmt.Sprintf("error while saving request %s: %v", uri, err)
+		return result
 	}
-	
+
 	labels := map[string]string{
-		"source": msg.GetSource().GetRegion(),
-		"targrt": msg.GetTarget().GetRegion(),
+		"source": msgIn.GetFrom(),
+		"target": msgOut.GetFrom(),
 	}
-	
-	if err = metric.MetricClient(ctx).Publish(ctx, "echo-duration", dur.Milliseconds(), labels); err != nil {
-	  return fmt.Errorf("error while saving echo-duration metric: %v", err)	
-	} 
-	
-	return nil
+
+	if err = metric.MetricClient(ctx).Publish(ctx, "echo-duration", result.Duration, labels); err != nil {
+		result.Error = fmt.Sprintf("error while saving echo-duration metric %s: %v", uri, err)
+		return result
+	}
+
+	return result
 
 }
 

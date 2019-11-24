@@ -9,7 +9,7 @@ import (
 	"cloud.google.com/go/spanner"
 )
 
-func save(ctx context.Context, dbPath, id, target, source string, sent, completed time.Time, duration time.Duration) error {
+func save(ctx context.Context, dbPath, id, target, source string, sent, completed time.Time, duration int64) error {
 
 	dbClient, err := spanner.NewClient(ctx, dbPath)
 	if err != nil {
@@ -27,7 +27,7 @@ func save(ctx context.Context, dbPath, id, target, source string, sent, complete
 				"source":    source,
 				"sent":      sent,
 				"completed": completed,
-				"duration":  duration.Microseconds(),
+				"duration":  duration,
 			},
 		}
 

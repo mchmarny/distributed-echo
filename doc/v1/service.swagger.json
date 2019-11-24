@@ -19,27 +19,41 @@
     "echoBroadcastResult": {
       "type": "object",
       "properties": {
-        "count": {
-          "type": "integer",
-          "format": "int32"
+        "source": {
+          "$ref": "#/definitions/echoNode"
+        },
+        "target": {
+          "$ref": "#/definitions/echoNode"
+        },
+        "duration": {
+          "type": "string",
+          "format": "int64"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "echoBroadcastResults": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/echoBroadcastResult"
+          }
         }
       }
     },
     "echoEchoMessage": {
       "type": "object",
       "properties": {
-        "id": {
+        "from": {
           "type": "string"
         },
         "sent": {
           "type": "string",
           "format": "date-time"
-        },
-        "source": {
-          "$ref": "#/definitions/echoNode"
-        },
-        "target": {
-          "$ref": "#/definitions/echoNode"
         }
       }
     },
