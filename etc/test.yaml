@@ -1,0 +1,4 @@
+---
+targets:
+  - region: test-region
+    url: http://localhost:8080/

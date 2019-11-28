@@ -47,7 +47,7 @@ func broadcastHandler(c *gin.Context) {
 
 func echoHandler(c *gin.Context) {
 
-	var msg EchoNode
+	var msg EchoMessage
 	if err := c.ShouldBindYAML(&msg); err != nil {
 		logger.Printf("Error binding echo YAML: %v", err)
 		c.YAML(http.StatusBadRequest, gin.H{

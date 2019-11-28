@@ -1,7 +1,5 @@
 package main
 
-import "time"
-
 // BroadcastMessage represents the EchoNodes this node should echo
 type BroadcastMessage struct {
 	Targets []*EchoNode `yaml:"targets"`
@@ -15,7 +13,7 @@ type EchoNode struct {
 
 // EchoMessage is the message sent from one node to another
 type EchoMessage struct {
-	From string    `yaml:"from"`
-	To   string    `yaml:"from"`
-	Sent time.Time `yaml:"send"`
+	From string `yaml:"from"`
+	To   string `yaml:"to"`
+	Sent int64  `yaml:"send"`
 }
