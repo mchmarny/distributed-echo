@@ -1,13 +1,10 @@
 ---
-- region: asia-northeast1
-  uri: distributed-echo-2gtouos2pq-an.a.run.app
-  port: 443
-- region: europe-west1
-  uri: distributed-echo-2gtouos2pq-ew.a.run.app
-  port: 443
-- region: us-east1
-  uri: distributed-echo-2gtouos2pq-ue.a.run.app
-  port: 443
-- region: us-central1
-  uri: distributed-echo-2gtouos2pq-uc.a.run.app
-  port: 443
+targets:
+  - region: asia-northeast1
+    url: https://distributed-echo-2gtouos2pq-an.a.run.app
+  - region: europe-west1
+    url: https://distributed-echo-2gtouos2pq-ew.a.run.app
+  - region: us-east1
+    url: https://distributed-echo-2gtouos2pq-ue.a.run.app
+  - region: us-central1
+    url: https://distributed-echo-2gtouos2pq-uc.a.run.app

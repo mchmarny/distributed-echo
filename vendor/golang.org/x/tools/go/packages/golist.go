@@ -270,7 +270,10 @@ func addNeededOverlayPackages(cfg *Config, driver driver, response *responseDedu
 	if err != nil {
 		return err
 	}
-	return addNeededOverlayPackages(cfg, driver, response, needPkgs, getGoInfo)
+	if err := addNeededOverlayPackages(cfg, driver, response, needPkgs, getGoInfo); err != nil {
+		return err
+	}
+	return nil
 }
 
 func runContainsQueries(cfg *Config, driver driver, response *responseDeduper, queries []string, goInfo func() *goInfo) error {
@@ -370,8 +373,7 @@ func adHocPackage(cfg *Config, driver driver, pattern, query string) (*driverRes
 	// Special case to handle issue #33482:
 	// If this is a file= query for ad-hoc packages where the file only exists on an overlay,
 	// and exists outside of a module, add the file in for the package.
-	if len(dirResponse.Packages) == 1 && (dirResponse.Packages[0].ID == "command-line-arguments" ||
-		filepath.ToSlash(dirResponse.Packages[0].PkgPath) == filepath.ToSlash(query)) {
+	if len(dirResponse.Packages) == 1 && (dirResponse.Packages[0].ID == "command-line-arguments" || dirResponse.Packages[0].PkgPath == filepath.ToSlash(query)) {
 		if len(dirResponse.Packages[0].GoFiles) == 0 {
 			filename := filepath.Join(pattern, filepath.Base(query)) // avoid recomputing abspath
 			// TODO(matloob): check if the file is outside of a root dir?

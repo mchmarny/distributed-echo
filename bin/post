@@ -1,0 +1,11 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+curl -X POST \
+     --data-binary @etc/demo.yaml \
+     -H "Content-type: text/x-yaml" \
+     http://localhost:8080/v1/broadcast
+

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-DIR="$(dirname "$0")"
-. "${DIR}/config"
-
-
-bin/client --file etc/demo.yaml
-
-
