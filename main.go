@@ -37,7 +37,7 @@ func main() {
 	v1 := r.Group("/v1")
 	{
 		v1.POST("/broadcast", broadcastHandler)
-		v1.GET("/echo", echoHandler)
+		v1.POST("/echo", echoHandler)
 	}
 
 	// server

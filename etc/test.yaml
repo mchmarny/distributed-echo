@@ -1,4 +1,4 @@
 ---
 targets:
-  - region: test-region
-    url: http://localhost:8080/
+  - region: localhost
+    url: http://localhost:8080/v1/echo

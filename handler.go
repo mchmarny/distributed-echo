@@ -31,17 +31,18 @@ func broadcastHandler(c *gin.Context) {
 		return
 	}
 
+	results := make(map[string]string, len(msg.Targets))
 	for _, n := range msg.Targets {
 		logger.Printf("Target: %+v", n)
 		if err := pingNode(c.Request.Context(), n); err != nil {
+			results[n.Region] = err.Error()
 			logger.Printf("Error pinging %s: %v", n.Region, err)
+		} else {
+			results[n.Region] = "OK"
 		}
 	}
 
-	c.YAML(http.StatusOK, gin.H{
-		"message": "Notification proccessed",
-		"status":  "OK",
-	})
+	c.YAML(http.StatusOK, results)
 
 }
 
@@ -59,4 +60,5 @@ func echoHandler(c *gin.Context) {
 
 	logger.Printf("Echo message: %v", msg)
 	c.YAML(http.StatusOK, msg)
+
 }

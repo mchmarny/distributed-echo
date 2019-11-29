@@ -14,8 +14,7 @@ do
     --platform managed \
     --timeout 15m \
     --region $SERVICE_REGION \
-    --labels "region=${SERVICE_REGION}" \
-    --set-env-vars "DB_PATH=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo" \
+    --set-env-vars "DB_PATH=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo,REGION=${SERVICE_REGION}" \
     --service-account "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
 
   # bind the serivice account to the depliyed service, in all regions

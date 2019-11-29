@@ -27,9 +27,9 @@ func TestEchoHandler(t *testing.T) {
 	assert.Nil(t, err)
 
 	r := gin.Default()
-	r.GET("/", echoHandler)
+	r.POST("/", echoHandler)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/", bytes.NewBuffer(b))
+	req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(b))
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)

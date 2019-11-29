@@ -1,10 +1,10 @@
 ---
 targets:
   - region: asia-northeast1
-    url: https://distributed-echo-2gtouos2pq-an.a.run.app
+    url: https://distributed-echo-2gtouos2pq-an.a.run.app/v1/echo
   - region: europe-west1
-    url: https://distributed-echo-2gtouos2pq-ew.a.run.app
+    url: https://distributed-echo-2gtouos2pq-ew.a.run.app/v1/echo
   - region: us-east1
-    url: https://distributed-echo-2gtouos2pq-ue.a.run.app
+    url: https://distributed-echo-2gtouos2pq-ue.a.run.app/v1/echo
   - region: us-central1
-    url: https://distributed-echo-2gtouos2pq-uc.a.run.app
+    url: https://distributed-echo-2gtouos2pq-uc.a.run.app/v1/echo
