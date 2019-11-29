@@ -3,25 +3,21 @@
 DIR="$(dirname "$0")"
 . "${DIR}/config"
 
-# Stackdriver
-POLICY_ID=$(gcloud alpha monitoring policies list \
-	--filter "displayName='${SERVICE_NAME}-policy'" \
-	--format 'value("name")')
-gcloud alpha monitoring policies delete $POLICY_ID -q
+# delete all services
+for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
+do
+	# service
+	gcloud beta run services delete $SERVICE_NAME \
+		--platform managed \
+		--region $SERVICE_REGION
 
-CHANNEL_ID=$(gcloud alpha monitoring channels list \
-	--filter "displayName='${SERVICE_NAME}-channel'" \
-	--format 'value("name")')
-gcloud alpha monitoring channels delete $CHANNEL_ID -q
+	# schedule
+	gcloud scheduler jobs delete "${SERVICE_NAME}-${SERVICE_REGION}-broadcast"
+done
 
-# Cloud Run
-gcloud beta run services delete $SERVICE_NAME \
-    --platform managed \
-    --region $SERVICE_REGION -q
+# db
+gcloud spanner instances delete $SERVICE_NAME
 
-# PubSub
-gcloud pubsub subscriptions delete $SERVICE_NAME -q
-
-# IAM
-# gcloud iam service-accounts delete \
-#     "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" -q
+# user
+gcloud iam service-accounts delete \
+	"${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
