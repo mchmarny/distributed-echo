@@ -4,7 +4,12 @@ DIR="$(dirname "$0")"
 . "${DIR}/config"
 
 
-export DB_PATH="projects/${PROJECT}/instances/distributed-echo/databases/echo"
+export DB_PATH="projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo"
 export REGION="us-east1"
 
-go run data.go handler.go message.go pinger.go main.go
+go run data.go \
+       handler.go \
+       message.go \
+       pinger.go \
+       poster.go \
+       main.go
