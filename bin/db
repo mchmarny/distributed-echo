@@ -18,4 +18,4 @@ gcloud spanner databases ddl update "echo" \
 
 gcloud spanner databases ddl update "echo" \
   --instance $SERVICE_NAME \
-  --ddl "CREATE INDEX ping_region_index ON pings (region)"
+  --ddl "CREATE INDEX ping_region_index ON pings (source)"
