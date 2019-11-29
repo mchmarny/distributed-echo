@@ -16,8 +16,9 @@ var (
 	projectID  = project.GetIDOrFail()
 	port       = env.MustGetEnvVar("PORT", "8080")
 	release    = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
-	dbPath     = env.MustGetEnvVar("DB_PATH", "")
-	nodeRegion = env.MustGetEnvVar("REGION", "")
+	dbPath     = env.MustGetEnvVar("DBP", "")
+	nodeRegion = env.MustGetEnvVar("REG", "")
+	metricName = env.MustGetEnvVar("MET", "echo-latency")
 )
 
 func main() {

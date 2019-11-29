@@ -4,8 +4,8 @@ DIR="$(dirname "$0")"
 . "${DIR}/config"
 
 
-export DB_PATH="projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo"
-export REGION="us-east1"
+export DBP="projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo"
+export REG="us-east1"
 
 go run data.go \
        handler.go \

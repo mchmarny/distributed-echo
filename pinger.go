@@ -66,7 +66,7 @@ func pingNode(ctx context.Context, target *EchoNode) (dur int64, err error) {
 		"source": nodeRegion,
 		"target": target.Region,
 	}
-	if err := metric.MakeClient(ctx).Publish(ctx, "echo-duration", echoDuration, labels); err != nil {
+	if err := metric.MakeClient(ctx).Publish(ctx, metricName, echoDuration, labels); err != nil {
 		// more then 1 metric per sec will cause an error
 		logger.Printf("Non-fatal error while publishing metrics: %v", err)
 	}
