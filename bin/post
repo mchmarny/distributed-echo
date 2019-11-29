@@ -4,23 +4,23 @@ DIR="$(dirname "$0")"
 . "${DIR}/config"
 
 
-for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
-do
+# for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
+# do
 
-  SERVICE_URL=$(gcloud beta run services describe ${SERVICE_NAME} \
-    --region ${SERVICE_REGION} --format="value(status.domain)")
+#   SERVICE_URL=$(gcloud beta run services describe ${SERVICE_NAME} \
+#     --region ${SERVICE_REGION} --format="value(status.domain)")
 
-  echo "pinging ${SERVICE_URL}..."
-  curl -X POST \
-    --data-binary @etc/demo.yaml \
-    -H "Content-type: text/x-yaml" \
-    "${SERVICE_URL}/v1/broadcast"
+#   echo "pinging ${SERVICE_URL}..."
+#   curl -X POST \
+#     --data-binary @etc/demo.yaml \
+#     -H "Content-type: text/x-yaml" \
+#     "${SERVICE_URL}/v1/broadcast"
 
-done
+# done
 
 
-# curl -X POST \
-#      --data-binary @etc/test.yaml \
-#      -H "Content-type: text/x-yaml" \
-#      http://localhost:8080/v1/broadcast
+curl -X POST \
+     --data-binary @etc/test.yaml \
+     -H "Content-type: text/x-yaml" \
+     http://localhost:8080/v1/broadcast
 

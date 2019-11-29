@@ -1,8 +1,5 @@
 .DS_Store
-/api
 /bin
-/cmd/client
-/doc
 LICENSE
 README.md
 .git

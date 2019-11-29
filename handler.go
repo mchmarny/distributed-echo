@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -34,11 +35,12 @@ func broadcastHandler(c *gin.Context) {
 	results := make(map[string]string, len(msg.Targets))
 	for _, n := range msg.Targets {
 		logger.Printf("Target: %+v", n)
-		if err := pingNode(c.Request.Context(), n); err != nil {
+		dur, err := pingNode(c.Request.Context(), n)
+		if err != nil {
 			results[n.Region] = err.Error()
 			logger.Printf("Error pinging %s: %v", n.Region, err)
 		} else {
-			results[n.Region] = "OK"
+			results[n.Region] = fmt.Sprintf("OK: %dms", dur)
 		}
 	}
 

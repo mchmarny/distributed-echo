@@ -1,0 +1,10 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+export DB_PATH="projects/${PROJECT}/instances/distributed-echo/databases/echo"
+export REGION="us-east1"
+
+go test ./...

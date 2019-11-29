@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"cloud.google.com/go/compute/metadata"
 	"github.com/google/uuid"
 	"github.com/mchmarny/gcputil/metric"
 	"gopkg.in/yaml.v2"
@@ -17,7 +18,7 @@ var (
 	poster ContentPoster = &EchoContentPoster{}
 )
 
-func pingNode(ctx context.Context, target *EchoNode) error {
+func pingNode(ctx context.Context, target *EchoNode) (dur int64, err error) {
 
 	in := EchoMessage{
 		From: nodeRegion,
@@ -27,7 +28,7 @@ func pingNode(ctx context.Context, target *EchoNode) error {
 
 	dataIn, err := yaml.Marshal(in)
 	if err != nil {
-		return fmt.Errorf("Error marshaling echo message: %v", err)
+		return 0, fmt.Errorf("Error marshaling echo message: %v", err)
 	}
 
 	// ping
@@ -36,18 +37,18 @@ func pingNode(ctx context.Context, target *EchoNode) error {
 	dataOut, err := poster.Post(target.URL, dataIn)
 	finished := time.Now()
 	if err != nil {
-		return fmt.Errorf("Error posting echo message: %v", err)
+		return 0, fmt.Errorf("Error posting echo message: %v", err)
 	}
 
 	// convert
 	var out EchoMessage
 	if err := yaml.Unmarshal(dataOut, &out); err != nil {
-		return fmt.Errorf("Error decoding echo response: %v", err)
+		return 0, fmt.Errorf("Error decoding echo response: %v", err)
 	}
 
 	// validate
 	if in != out {
-		return fmt.Errorf("Unexpected echo response (wanted: %v, got: %v)", in, out)
+		return 0, fmt.Errorf("Unexpected echo response (wanted: %v, got: %v)", in, out)
 	}
 	echoDuration := finished.Sub(started).Milliseconds()
 	logger.Printf("echo-ping from: %s to: %s (duration: %v)\n ",
@@ -56,7 +57,7 @@ func pingNode(ctx context.Context, target *EchoNode) error {
 	// save
 	if err := save(ctx, dbPath, uuid.New().String(), nodeRegion, target.Region,
 		started, finished, echoDuration); err != nil {
-		return fmt.Errorf("Error while saving results: %v", err)
+		return echoDuration, fmt.Errorf("Error while saving results: %v", err)
 	}
 
 	// metrics
@@ -65,10 +66,10 @@ func pingNode(ctx context.Context, target *EchoNode) error {
 		"target": target.Region,
 	}
 	if err := metric.MakeClient(ctx).Publish(ctx, "echo-duration", echoDuration, labels); err != nil {
-		return fmt.Errorf("Error while publishing metrics: %v", err)
+		return echoDuration, fmt.Errorf("Error while publishing metrics: %v", err)
 	}
 
-	return nil
+	return echoDuration, nil
 
 }
 
@@ -83,8 +84,24 @@ type EchoContentPoster struct{}
 // Post posts to echo endpoint
 func (p *EchoContentPoster) Post(url string, in []byte) (out []byte, err error) {
 
+	// get auth token from metadata server
+	tokenURL := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s", url)
+	idToken, err := metadata.Get(tokenURL)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting metadata: %v", err)
+	}
+
+	// create request
 	logger.Printf("HTTP Post to %s with %d bytes", url, len(in))
-	resp, err := http.Post(url, "text/x-yaml", bytes.NewBuffer(in))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(in))
+	if err != nil {
+		return nil, fmt.Errorf("Error creating posting request: %v", err)
+	}
+	req.Header.Add("Content-Type", "text/x-yaml")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", idToken))
+
+	// process response
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error posting echo message: %v", err)
 	}

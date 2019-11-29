@@ -1,0 +1,31 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+# deply service to all designated regions
+for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
+do
+
+    SERVICE_URL=$(gcloud beta run services describe ${SERVICE_NAME} \
+        --region ${SERVICE_REGION} --format="value(status.domain)")
+
+    gcloud scheduler jobs create http "${SERVICE_NAME}-${SERVICE_REGION}-broadcast" \
+        --http-method POST \
+        --schedule "every 15 mins" \
+        --uri "${SERVICE_URL}/v1/broadcast" \
+        --message-body-from-file "etc/demo.yaml" \
+        --oidc-service-account-email "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
+        --oidc-token-audience "${SERVICE_URL}/v1/broadcast"
+
+done
+
+
+
+
+
+
+
+
+
