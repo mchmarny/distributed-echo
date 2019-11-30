@@ -19,9 +19,7 @@ var (
 	dbPath     = env.MustGetEnvVar("DBP", "")
 	nodeRegion = env.MustGetEnvVar("REG", "")
 	metricName = env.MustGetEnvVar("MET", "echo-latency")
-
-	// ReleaseVersion is set during build based on image version
-	ReleaseVersion string
+	release    = env.MustGetEnvVar("REL", "v0.0.0-default")
 )
 
 func main() {

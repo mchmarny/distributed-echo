@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+
+for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
+do
+  SERVICE_URL=$(gcloud beta run services describe ${SERVICE_NAME} \
+    --region ${SERVICE_REGION} --format="value(status.domain)")
+
+  curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" \
+    $SERVICE_URL
+done
+
+

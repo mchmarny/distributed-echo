@@ -24,7 +24,7 @@ func defaultHandler(c *gin.Context) {
 	}
 
 	c.YAML(http.StatusOK, gin.H{
-		"release": ReleaseVersion,
+		"release": release,
 		"request": string(dump),
 	})
 }
