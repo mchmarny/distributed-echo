@@ -15,7 +15,7 @@ do
     --timeout 15m \
     --labels "release=${SERVICE_IMAGE_VERSION//./-}" \
     --region $SERVICE_REGION \
-    --set-env-vars "DBP=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo,REG=${SERVICE_REGION}" \
+    --set-env-vars "DBP=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo" \
     --service-account "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
 
   # bind the serivice account to the depliyed service, in all regions
