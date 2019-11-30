@@ -12,7 +12,7 @@ import (
 
 var (
 	//service
-	logger     = log.New(os.Stdout, "", 0)
+	logger     = log.New(os.Stdout, "[ECHO] ", 0)
 	projectID  = project.GetIDOrFail()
 	port       = env.MustGetEnvVar("PORT", "8080")
 	dbPath     = env.MustGetEnvVar("DBP", "")

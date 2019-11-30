@@ -13,6 +13,7 @@ do
     --no-allow-unauthenticated \
     --platform managed \
     --timeout 15m \
+    --labels "release=${SERVICE_IMAGE_VERSION//./-}" \
     --region $SERVICE_REGION \
     --set-env-vars "DBP=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo,REG=${SERVICE_REGION}" \
     --service-account "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com"
@@ -23,5 +24,4 @@ do
 		--region $SERVICE_REGION \
 		--member "serviceAccount:${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
 		--role roles/run.invoker
-
 done
