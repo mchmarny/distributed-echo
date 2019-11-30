@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"cloud.google.com/go/compute/metadata"
+	"github.com/mchmarny/gcputil/cr"
 )
 
 // EchoContentPoster posts to echo endpoint
@@ -15,23 +15,19 @@ type EchoContentPoster struct{}
 // Post posts to echo endpoint
 func (p *EchoContentPoster) Post(url string, in []byte) (out []byte, err error) {
 
-	// get auth token from metadata server
-	tokenURL := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s", url)
-	idToken, err := metadata.Get(tokenURL)
-	if err != nil {
-		return nil, fmt.Errorf("Error getting metadata: %v", err)
-	}
-
 	// create request
 	logger.Printf("HTTP Post to %s with %d bytes", url, len(in))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(in))
 	if err != nil {
 		return nil, fmt.Errorf("Error creating posting request: %v", err)
 	}
-	req.Header.Add("Content-Type", "text/x-yaml")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", idToken))
+
+	if err = cr.AuthorizeRequest(req, url); err != nil {
+		return nil, fmt.Errorf("Error authorizing request: %v", err)
+	}
 
 	// process response
+	req.Header.Add("Content-Type", "text/x-yaml")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error posting echo message: %v", err)
