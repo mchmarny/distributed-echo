@@ -15,10 +15,12 @@ var (
 	logger     = log.New(os.Stdout, "", 0)
 	projectID  = project.GetIDOrFail()
 	port       = env.MustGetEnvVar("PORT", "8080")
-	release    = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 	dbPath     = env.MustGetEnvVar("DBP", "")
 	nodeRegion = env.MustGetEnvVar("REG", "")
 	metricName = env.MustGetEnvVar("MET", "echo-latency")
+
+	// ReleaseVersion is set during build based on image version
+	ReleaseVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 )
 
 func main() {
