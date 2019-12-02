@@ -5,4 +5,5 @@ SERVICE_IMAGE_VERSION="0.5.10"
 SERVICE_REGIONS=(us-central1 us-east1 europe-west1 asia-northeast1)
 DB_REGION="regional-us-central1" # nam3, nam-eur-asia1
 DB_NODES=3 # https://cloud.google.com/spanner/docs/instances
+SCHEDULE_FREQ="0 */3 * * *"
 PROJECT=$(gcloud config get-value project)

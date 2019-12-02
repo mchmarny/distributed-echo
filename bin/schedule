@@ -13,7 +13,7 @@ do
 
     gcloud scheduler jobs create http "${SERVICE_NAME}-${SERVICE_REGION}-broadcast" \
         --http-method POST \
-        --schedule "every 15 mins" \
+        --schedule "${SCHEDULE_FREQ}" \
         --uri "${SERVICE_URL}/v1/broadcast" \
         --message-body-from-file "etc/demo.yaml" \
         --oidc-service-account-email "${SERVICE_NAME}@${PROJECT}.iam.gserviceaccount.com" \
