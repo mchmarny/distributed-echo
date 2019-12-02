@@ -3,29 +3,16 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/http/httputil"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func healthHandler(c *gin.Context) {
-	c.String(http.StatusOK, "OK")
-}
-
 func defaultHandler(c *gin.Context) {
-
-	dump, err := httputil.DumpRequest(c.Request, true)
-	if err != nil {
-		c.YAML(http.StatusInternalServerError, gin.H{
-			"code":   string(http.StatusInternalServerError),
-			"status": err.Error(),
-		})
-		return
-	}
 
 	c.YAML(http.StatusOK, gin.H{
 		"release": release,
-		"request": string(dump),
+		"request": time.Now().Local().UnixNano(),
 	})
 }
 

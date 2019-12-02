@@ -33,7 +33,6 @@ func main() {
 
 	// simple routes
 	r.GET("/", defaultHandler)
-	r.GET("/health", healthHandler)
 
 	// api
 	v1 := r.Group("/v1")

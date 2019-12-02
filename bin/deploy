@@ -14,6 +14,7 @@ do
     --platform managed \
     --timeout 15m \
     --concurrency 80 \
+    --memory 512Mi \
     --labels "release=${SERVICE_IMAGE_VERSION//./-}" \
     --region $SERVICE_REGION \
     --set-env-vars "DBP=projects/${PROJECT}/instances/${SERVICE_NAME}/databases/echo,REG=${SERVICE_REGION},REL=${SERVICE_IMAGE_VERSION}" \
