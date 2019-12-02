@@ -2,7 +2,7 @@
 
 Simple Broadcast/Echo service for Cloud Run designed to demonstrate authenticated inter-service connectivity and measure latency between the different regions where this service is deployed.
 
-![](img/overview.png)
+![](img/diagram.png)
 
 > The inter-region service invocation latency measurements do not account for the implicit "cold starts" of each service. You can minimize it though by creating more frequent Cloud Scheduler invocations
 
