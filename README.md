@@ -1,10 +1,10 @@
 # distributed-echo
 
-Simple Broadcast/Echo service for Cloud Run designed to measure the latency between different regions where this service is deployed.
+Simple Broadcast/Echo service for Cloud Run designed to demonstrate authenticated inter-service connectivity and measure latency between the different regions where this service is deployed.
 
 ![](img/overview.png)
 
-> This service does not account for the implicit "cold starts" of each service. You can minimize it though by creating more frequent Cloud Schedules.
+> The inter-region service invocation latency measurements do not account for the implicit "cold starts" of each service. You can minimize it though by creating more frequent Cloud Scheduler invocations
 
 ## Pre-requirements
 
@@ -14,18 +14,18 @@ If you don't have one already, start by creating new project and configuring you
 
 All the variables used in this service are defined in the [bin/config](bin/config) file. You can edit these to your preferred values.
 
-* `SERVICE_NAME` (default: distributed-echo) is the name of the service deployed into Cloud Run. Combination of this name is also used for database, schedule, and user name.
-* `SERVICE_IMAGE_VERSION` (default: 0.5.6) is the version of the image that will be build to use in Cloud Run deployment
-* `SERVICE_REGIONS` (default: us-central1 us-east1 europe-west1 asia-northeast1) is all the regions where this service should be deployed to Cloud Run
-* `DB_REGION` (default: regional-us-central1) is the Spanner instance configuration value which will dictate the deployment regions (alt: nam3, nam-eur-asia1)
-* `DB_NODES` (default: 3) is the number of Spanner nodes in created in the above defied region (see: https://cloud.google.com/spanner/docs/instances)
+* `SERVICE_NAME` (default: `distributed-echo`) is the name of the service deployed into Cloud Run. Combination of this name is also used for database, schedule, and user name.
+* `SERVICE_IMAGE_VERSION` (default: `0.5.6`) is the version of the image that will be build to use in Cloud Run deployment
+* `SERVICE_REGIONS` (default: `us-central1`, `us-east1`, `europe-west1`, `asia-northeast1`) is all the regions where this service should be deployed to Cloud Run
+* `DB_REGION` (default: `regional-us-central1`) is the Spanner instance configuration value which will dictate the deployment regions (alt: `nam3`, `nam-eur-asia1`)
+* `DB_NODES` (default: `3`) is the number of Spanner nodes in created in the above defied region (see: https://cloud.google.com/spanner/docs/instances)
 
 
 ## Deployment
 
-> Note, to keep this readme short, I will be asking you to execute scripts rather than listing here complete commands. You should really review each one of these scripts for content, and, to understand the individual commands so you can use them in the future.
+> Note, to keep this readme short, I will be asking you to execute scripts rather than listing here complete commands. You should review each one of these scripts for content. This will also help you understand the individual commands so you can use them in the future.
 
-First, start by creating IAM user and granting that user all the necessary rights.
+First, start by creating IAM user and granting that user all the necessary roles.
 
 ```shell
 bin/setup
