@@ -9,7 +9,7 @@ for SERVICE_REGION in "${SERVICE_REGIONS[@]}"
 do
 
     SERVICE_URL=$(gcloud beta run services describe ${SERVICE_NAME} \
-        --region ${SERVICE_REGION} --format="value(status.domain)")
+        --region ${SERVICE_REGION} --format="value(status.url)")
 
     gcloud scheduler jobs create http "${SERVICE_NAME}-${SERVICE_REGION}-broadcast" \
         --http-method POST \
